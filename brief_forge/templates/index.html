@@ -1,0 +1,818 @@
+<!DOCTYPE html>
+<!--
+  Brief Forge — Main single-page UI template.
+
+  This template renders the full application shell including:
+  - The input form for the plain-language design description.
+  - A dynamic result display area that is populated via JavaScript
+    after a successful /generate API call.
+  - Copy buttons for all three output formats (Markdown, plain text, JSON).
+  - Inline error messaging for API and validation failures.
+
+  The page is fully self-contained — no external JS framework is required.
+  All interactivity is implemented with vanilla JavaScript using the Fetch API.
+-->
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="Transform plain-language design goals into structured, actionable creative briefs powered by GPT-4o." />
+  <title>Brief Forge — AI Design Brief Generator</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}" />
+  <!-- Favicon placeholder (inline SVG as data URI) -->
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🎨</text></svg>" />
+</head>
+<body>
+
+  <!-- ═══════════════════════════════════════════════════════════════════ -->
+  <!--  HEADER                                                             -->
+  <!-- ═══════════════════════════════════════════════════════════════════ -->
+  <header class="site-header">
+    <div class="header-inner">
+      <div class="logo">
+        <span class="logo-icon" aria-hidden="true">🎨</span>
+        <span class="logo-text">Brief&nbsp;Forge</span>
+      </div>
+      <p class="tagline">Transform plain-language goals into structured creative briefs — powered by GPT-4o</p>
+    </div>
+  </header>
+
+  <!-- ═══════════════════════════════════════════════════════════════════ -->
+  <!--  MAIN                                                               -->
+  <!-- ═══════════════════════════════════════════════════════════════════ -->
+  <main class="main-content">
+
+    <!-- ── Input Section ──────────────────────────────────────────────── -->
+    <section class="input-section" aria-labelledby="input-heading">
+      <div class="card input-card">
+        <h1 id="input-heading" class="section-title">Describe Your Design Project</h1>
+        <p class="section-description">
+          Describe what you need in everyday language — audience, mood, purpose, brand personality,
+          key messages, anything that comes to mind. The more context you provide, the richer your brief will be.
+        </p>
+
+        <!-- Example prompts -->
+        <div class="example-prompts" aria-label="Example prompts">
+          <p class="example-prompts__label">Try an example:</p>
+          <div class="example-prompts__list">
+            <button
+              type="button"
+              class="example-btn"
+              data-prompt="A landing page for a sustainable coffee brand aimed at millennials. The vibe should feel earthy and premium but not pretentious — think warm neutrals, natural textures, and a hint of sage green. The hero headline is 'Good coffee. Good planet.' We want people to sign up for a subscription box."
+            >
+              ☕ Sustainable Coffee
+            </button>
+            <button
+              type="button"
+              class="example-btn"
+              data-prompt="A mobile app for a Gen Z fitness startup. High energy, bold colours, motivational. Think neon accents on dark backgrounds. The app tracks workouts and connects friends. The tone should feel like a personal trainer who's also your hype friend."
+            >
+              💪 Fitness App
+            </button>
+            <button
+              type="button"
+              class="example-btn"
+              data-prompt="A luxury real estate agency website for high-net-worth buyers in London. Understated elegance — cream, charcoal, and gold. The photography should do the talking. Typography should feel like a broadsheet newspaper. We want to convey exclusivity without being cold."
+            >
+              🏠 Luxury Real Estate
+            </button>
+            <button
+              type="button"
+              class="example-btn"
+              data-prompt="A children's educational app for 5-8 year olds teaching maths through storytelling and adventure. Bright, playful, accessible. Characters are friendly animals. Parents need to trust it's safe and educational; kids need to think it's fun."
+            >
+              🦁 Kids' Learning App
+            </button>
+          </div>
+        </div>
+
+        <!-- Input form -->
+        <form id="brief-form" class="brief-form" novalidate>
+          <div class="form-field">
+            <label for="description" class="form-label">
+              Your design description
+              <span class="form-label__required" aria-label="required">*</span>
+            </label>
+            <textarea
+              id="description"
+              name="description"
+              class="form-textarea"
+              rows="6"
+              maxlength="4000"
+              placeholder="Describe your project here…
+
+For example: 'A landing page for an indie podcast about true crime and psychology. Target audience: women 25–45. Moody but sophisticated — deep burgundy, charcoal, and dusty rose. Serif headings. The podcast is called The Mind Files.'"
+              aria-required="true"
+              aria-describedby="description-hint description-count"
+            ></textarea>
+            <div class="form-field__footer">
+              <span id="description-hint" class="form-hint">Min 10 characters · Max 4,000 characters</span>
+              <span id="description-count" class="char-count" aria-live="polite" aria-atomic="true">0 / 4,000</span>
+            </div>
+          </div>
+
+          <!-- Validation error -->
+          <div id="form-error" class="form-error" role="alert" aria-live="assertive" hidden>
+            <span class="form-error__icon" aria-hidden="true">⚠️</span>
+            <span id="form-error-message" class="form-error__message"></span>
+          </div>
+
+          <button type="submit" id="submit-btn" class="btn btn--primary btn--generate">
+            <span class="btn__text">Generate Brief</span>
+            <span class="btn__spinner" aria-hidden="true" hidden>
+              <svg class="spinner" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                <circle class="spinner__track" cx="12" cy="12" r="10" fill="none" stroke-width="3" />
+                <circle class="spinner__arc" cx="12" cy="12" r="10" fill="none" stroke-width="3" stroke-dasharray="31.4" stroke-dashoffset="21" />
+              </svg>
+            </span>
+            <span class="btn__loading-text" hidden>Generating…</span>
+          </button>
+        </form>
+      </div>
+    </section>
+
+    <!-- ── API / Network Error Banner ─────────────────────────────────── -->
+    <div
+      id="api-error-banner"
+      class="error-banner"
+      role="alert"
+      aria-live="assertive"
+      hidden
+    >
+      <div class="error-banner__inner">
+        <span class="error-banner__icon" aria-hidden="true">❌</span>
+        <div class="error-banner__content">
+          <strong class="error-banner__title">Generation failed</strong>
+          <p id="api-error-message" class="error-banner__message"></p>
+        </div>
+        <button type="button" class="error-banner__close" aria-label="Dismiss error" id="dismiss-error-btn">&times;</button>
+      </div>
+    </div>
+
+    <!-- ── Result Section ─────────────────────────────────────────────── -->
+    <section
+      id="result-section"
+      class="result-section"
+      aria-labelledby="result-heading"
+      aria-live="polite"
+      hidden
+    >
+      <div class="result-header">
+        <h2 id="result-heading" class="result-title">Your Design Brief</h2>
+        <button
+          type="button"
+          id="new-brief-btn"
+          class="btn btn--secondary"
+          aria-label="Generate a new brief"
+        >
+          ✦ New Brief
+        </button>
+      </div>
+
+      <!-- The rendered brief partial is injected here by JavaScript -->
+      <div id="brief-container">
+        <!-- brief_partial.html content inserted here -->
+      </div>
+
+      <!-- ── Export Format Tabs ────────────────────────────────────────── -->
+      <div class="export-section">
+        <h3 class="export-section__title">Export Format</h3>
+        <div class="export-tabs" role="tablist" aria-label="Export format">
+          <button
+            type="button"
+            role="tab"
+            class="tab-btn tab-btn--active"
+            id="tab-markdown"
+            aria-selected="true"
+            aria-controls="panel-markdown"
+            data-format="markdown"
+          >
+            Markdown
+          </button>
+          <button
+            type="button"
+            role="tab"
+            class="tab-btn"
+            id="tab-text"
+            aria-selected="false"
+            aria-controls="panel-text"
+            data-format="text"
+          >
+            Plain Text
+          </button>
+          <button
+            type="button"
+            role="tab"
+            class="tab-btn"
+            id="tab-json"
+            aria-selected="false"
+            aria-controls="panel-json"
+            data-format="json"
+          >
+            JSON
+          </button>
+        </div>
+
+        <!-- Tab panels -->
+        <div
+          id="panel-markdown"
+          role="tabpanel"
+          aria-labelledby="tab-markdown"
+          class="export-panel export-panel--active"
+        >
+          <div class="export-panel__toolbar">
+            <span class="export-panel__label">Paste directly into Figma, Notion, or any Markdown editor</span>
+            <button
+              type="button"
+              class="btn btn--copy"
+              data-copy-target="output-markdown"
+              aria-label="Copy Markdown to clipboard"
+            >
+              <span class="copy-icon" aria-hidden="true">📋</span>
+              <span class="copy-text">Copy</span>
+            </button>
+          </div>
+          <pre id="output-markdown" class="export-output" tabindex="0" aria-label="Markdown output"></pre>
+        </div>
+
+        <div
+          id="panel-text"
+          role="tabpanel"
+          aria-labelledby="tab-text"
+          class="export-panel"
+          hidden
+        >
+          <div class="export-panel__toolbar">
+            <span class="export-panel__label">Clean text for email, Slack, or any plain-text field</span>
+            <button
+              type="button"
+              class="btn btn--copy"
+              data-copy-target="output-text"
+              aria-label="Copy plain text to clipboard"
+            >
+              <span class="copy-icon" aria-hidden="true">📋</span>
+              <span class="copy-text">Copy</span>
+            </button>
+          </div>
+          <pre id="output-text" class="export-output" tabindex="0" aria-label="Plain text output"></pre>
+        </div>
+
+        <div
+          id="panel-json"
+          role="tabpanel"
+          aria-labelledby="tab-json"
+          class="export-panel"
+          hidden
+        >
+          <div class="export-panel__toolbar">
+            <span class="export-panel__label">Structured JSON for programmatic use or design system imports</span>
+            <button
+              type="button"
+              class="btn btn--copy"
+              data-copy-target="output-json"
+              aria-label="Copy JSON to clipboard"
+            >
+              <span class="copy-icon" aria-hidden="true">📋</span>
+              <span class="copy-text">Copy</span>
+            </button>
+          </div>
+          <pre id="output-json" class="export-output" tabindex="0" aria-label="JSON output"></pre>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <!-- ═══════════════════════════════════════════════════════════════════ -->
+  <!--  FOOTER                                                             -->
+  <!-- ═══════════════════════════════════════════════════════════════════ -->
+  <footer class="site-footer">
+    <div class="footer-inner">
+      <p class="footer-copy">
+        <strong>Brief Forge</strong> — AI-powered design brief generation.
+        Briefs are generated by GPT-4o and are for creative inspiration only.
+      </p>
+    </div>
+  </footer>
+
+  <!-- ═══════════════════════════════════════════════════════════════════ -->
+  <!--  JAVASCRIPT                                                         -->
+  <!-- ═══════════════════════════════════════════════════════════════════ -->
+  <script>
+    /* ------------------------------------------------------------------ */
+    /*  Utility helpers                                                    */
+    /* ------------------------------------------------------------------ */
+
+    /** @param {string} id @returns {HTMLElement} */
+    function $(id) {
+      return document.getElementById(id);
+    }
+
+    /** Show an element by removing the `hidden` attribute. */
+    function show(el) {
+      if (el) el.hidden = false;
+    }
+
+    /** Hide an element by setting the `hidden` attribute. */
+    function hide(el) {
+      if (el) el.hidden = true;
+    }
+
+    /* ------------------------------------------------------------------ */
+    /*  Character counter                                                  */
+    /* ------------------------------------------------------------------ */
+
+    const textarea = document.getElementById('description');
+    const charCount = $('description-count');
+
+    function updateCharCount() {
+      const len = textarea.value.length;
+      charCount.textContent = len.toLocaleString() + ' / 4,000';
+      charCount.classList.toggle('char-count--warning', len > 3600);
+      charCount.classList.toggle('char-count--danger', len >= 4000);
+    }
+
+    textarea.addEventListener('input', updateCharCount);
+    updateCharCount();
+
+    /* ------------------------------------------------------------------ */
+    /*  Example prompt buttons                                             */
+    /* ------------------------------------------------------------------ */
+
+    document.querySelectorAll('.example-btn').forEach(function (btn) {
+      btn.addEventListener('click', function () {
+        textarea.value = btn.dataset.prompt;
+        updateCharCount();
+        textarea.focus();
+        // Scroll textarea into view on mobile.
+        textarea.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      });
+    });
+
+    /* ------------------------------------------------------------------ */
+    /*  Form submission                                                    */
+    /* ------------------------------------------------------------------ */
+
+    const form = $('brief-form');
+    const submitBtn = $('submit-btn');
+    const btnText = submitBtn.querySelector('.btn__text');
+    const btnSpinner = submitBtn.querySelector('.btn__spinner');
+    const btnLoadingText = submitBtn.querySelector('.btn__loading-text');
+    const formError = $('form-error');
+    const formErrorMsg = $('form-error-message');
+    const apiBanner = $('api-error-banner');
+    const apiErrorMsg = $('api-error-message');
+    const resultSection = $('result-section');
+    const briefContainer = $('brief-container');
+
+    /** Show a form-level validation error. */
+    function showFormError(message) {
+      formErrorMsg.textContent = message;
+      show(formError);
+      formError.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    }
+
+    /** Hide the form-level validation error. */
+    function clearFormError() {
+      hide(formError);
+      formErrorMsg.textContent = '';
+    }
+
+    /** Show the API error banner with a message. */
+    function showApiBanner(message) {
+      apiErrorMsg.textContent = message;
+      show(apiBanner);
+      apiBanner.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    }
+
+    /** Hide the API error banner. */
+    function clearApiBanner() {
+      hide(apiBanner);
+      apiErrorMsg.textContent = '';
+    }
+
+    /** Set the submit button into loading state. */
+    function setLoading(loading) {
+      submitBtn.disabled = loading;
+      if (loading) {
+        hide(btnText);
+        show(btnSpinner);
+        show(btnLoadingText);
+      } else {
+        show(btnText);
+        hide(btnSpinner);
+        hide(btnLoadingText);
+      }
+    }
+
+    /** Dismiss error banner. */
+    $('dismiss-error-btn').addEventListener('click', clearApiBanner);
+
+    /** New brief button — scroll to top, clear results, refocus textarea. */
+    $('new-brief-btn').addEventListener('click', function () {
+      hide(resultSection);
+      briefContainer.innerHTML = '';
+      // Reset output panels.
+      $('output-markdown').textContent = '';
+      $('output-text').textContent = '';
+      $('output-json').textContent = '';
+      clearApiBanner();
+      textarea.focus();
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    });
+
+    /* Main form submit handler */
+    form.addEventListener('submit', async function (event) {
+      event.preventDefault();
+      clearFormError();
+      clearApiBanner();
+
+      const description = textarea.value.trim();
+
+      // Client-side validation.
+      if (!description) {
+        showFormError('Please describe your design project before generating a brief.');
+        textarea.focus();
+        return;
+      }
+      if (description.length < 10) {
+        showFormError('Your description is too short. Please add more detail (at least 10 characters).');
+        textarea.focus();
+        return;
+      }
+      if (description.length > 4000) {
+        showFormError('Your description is too long. Please keep it under 4,000 characters.');
+        textarea.focus();
+        return;
+      }
+
+      setLoading(true);
+
+      try {
+        const response = await fetch('/generate', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ description: description }),
+        });
+
+        let data;
+        try {
+          data = await response.json();
+        } catch (parseErr) {
+          throw new Error('The server returned an unexpected response. Please try again.');
+        }
+
+        if (!response.ok || !data.success) {
+          const errMsg = (data && data.error)
+            ? data.error
+            : 'An unexpected error occurred. Please try again.';
+          showApiBanner(errMsg);
+          return;
+        }
+
+        // Populate the result section with the brief.
+        renderBrief(data.brief, data.formats);
+
+      } catch (err) {
+        if (err instanceof TypeError && err.message.includes('fetch')) {
+          showApiBanner('Could not connect to the server. Please check your internet connection and try again.');
+        } else {
+          showApiBanner(err.message || 'An unexpected error occurred. Please try again.');
+        }
+      } finally {
+        setLoading(false);
+      }
+    });
+
+    /* ------------------------------------------------------------------ */
+    /*  Brief rendering                                                    */
+    /* ------------------------------------------------------------------ */
+
+    /**
+     * Render the brief data into the result section.
+     * @param {Object} brief  - The structured brief dict from the API.
+     * @param {Object} formats - Pre-rendered format strings.
+     */
+    function renderBrief(brief, formats) {
+      // Build the brief partial HTML.
+      briefContainer.innerHTML = buildBriefHTML(brief);
+
+      // Populate the export panels.
+      $('output-markdown').textContent = formats.markdown || '';
+      $('output-text').textContent = formats.text || '';
+      $('output-json').textContent = formats.json || '';
+
+      // Show the result section and scroll to it.
+      show(resultSection);
+      resultSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+
+      // Activate the first tab.
+      activateTab('markdown');
+
+      // Attach swatch click-to-copy handlers.
+      attachSwatchCopyHandlers();
+    }
+
+    /**
+     * Build the inner HTML for the brief container from a brief dict.
+     * This mirrors the logic in brief_partial.html for use with JS rendering.
+     * @param {Object} brief
+     * @returns {string}
+     */
+    function buildBriefHTML(brief) {
+      const palette = brief.color_palette || {};
+      const swatches = palette.swatches || [];
+      const typography = brief.typography || {};
+      const layout = brief.layout || {};
+      const copyHierarchy = brief.copy_hierarchy || [];
+      const moodDescriptors = brief.mood_descriptors || [];
+
+      // Helper: escape HTML special characters.
+      function esc(str) {
+        return String(str || '')
+          .replace(/&/g, '&amp;')
+          .replace(/</g, '&lt;')
+          .replace(/>/g, '&gt;')
+          .replace(/"/g, '&quot;')
+          .replace(/'/g, '&#39;');
+      }
+
+      // Helper: determine if a colour is light or dark for text contrast.
+      function isLightColor(hex) {
+        const h = hex.replace('#', '');
+        const r = parseInt(h.substring(0, 2), 16);
+        const g = parseInt(h.substring(2, 4), 16);
+        const b = parseInt(h.substring(4, 6), 16);
+        // Perceived luminance formula.
+        const luminance = (0.299 * r + 0.587 * g + 0.114 * b) / 255;
+        return luminance > 0.5;
+      }
+
+      let html = '<div class="brief-partial">';
+
+      /* ── Header ──────────────────────────────────────────────────────── */
+      html += '<div class="brief-header">';
+      html += '<h2 class="brief-title">' + esc(brief.title) + '</h2>';
+      if (moodDescriptors.length > 0) {
+        html += '<div class="brief-mood">';
+        moodDescriptors.forEach(function (mood) {
+          html += '<span class="mood-tag">' + esc(mood) + '</span>';
+        });
+        html += '</div>';
+      }
+      html += '</div>'; // .brief-header
+
+      /* ── Project Overview ────────────────────────────────────────────── */
+      if (brief.project_overview) {
+        html += '<section class="brief-section">';
+        html += '<h3 class="brief-section__title">Project Overview</h3>';
+        html += '<p class="brief-overview">' + esc(brief.project_overview) + '</p>';
+        html += '</section>';
+      }
+
+      /* ── Colour Palette ──────────────────────────────────────────────── */
+      if (swatches.length > 0) {
+        html += '<section class="brief-section">';
+        html += '<h3 class="brief-section__title">Colour Palette</h3>';
+        html += '<div class="palette-grid">';
+        swatches.forEach(function (swatch) {
+          const hex = esc(swatch.hex_code || '#CCCCCC');
+          const name = esc(swatch.name || '');
+          const role = esc(swatch.role || '');
+          const usage = esc(swatch.usage || '');
+          const textClass = isLightColor(swatch.hex_code || '#CCCCCC')
+            ? 'swatch-text--dark'
+            : 'swatch-text--light';
+          html += '<div class="swatch-card" role="button" tabindex="0" '
+            + 'data-hex="' + hex + '" '
+            + 'aria-label="Copy hex code ' + hex + ' (' + name + ')" '
+            + 'title="Click to copy ' + hex + '">';
+          html += '<div class="swatch-color ' + textClass + '" style="background-color:' + hex + ';">';
+          html += '<span class="swatch-hex">' + hex + '</span>';
+          html += '<span class="swatch-copy-hint" aria-hidden="true">Click to copy</span>';
+          html += '</div>'; // .swatch-color
+          html += '<div class="swatch-info">';
+          html += '<span class="swatch-role">' + role + '</span>';
+          html += '<span class="swatch-name">' + name + '</span>';
+          if (usage) {
+            html += '<span class="swatch-usage">' + usage + '</span>';
+          }
+          html += '</div>'; // .swatch-info
+          html += '</div>'; // .swatch-card
+        });
+        html += '</div>'; // .palette-grid
+        html += '</section>';
+      }
+
+      /* ── Typography ──────────────────────────────────────────────────── */
+      if (typography.display_font || typography.body_font) {
+        html += '<section class="brief-section">';
+        html += '<h3 class="brief-section__title">Typography</h3>';
+        html += '<div class="typography-grid">';
+
+        if (typography.display_font) {
+          html += '<div class="type-item">';
+          html += '<span class="type-item__label">Display / Headlines</span>';
+          html += '<span class="type-item__font">' + esc(typography.display_font) + '</span>';
+          if (typography.display_weight) {
+            html += '<span class="type-item__weight">Weight ' + esc(typography.display_weight) + '</span>';
+          }
+          html += '</div>';
+        }
+
+        if (typography.body_font) {
+          html += '<div class="type-item">';
+          html += '<span class="type-item__label">Body Copy</span>';
+          html += '<span class="type-item__font">' + esc(typography.body_font) + '</span>';
+          if (typography.body_weight) {
+            html += '<span class="type-item__weight">Weight ' + esc(typography.body_weight) + '</span>';
+          }
+          html += '</div>';
+        }
+
+        if (typography.accent_font) {
+          html += '<div class="type-item">';
+          html += '<span class="type-item__label">Accent / Labels</span>';
+          html += '<span class="type-item__font">' + esc(typography.accent_font) + '</span>';
+          html += '</div>';
+        }
+
+        html += '</div>'; // .typography-grid
+
+        if (typography.notes) {
+          html += '<p class="typography-notes">' + esc(typography.notes) + '</p>';
+        }
+
+        html += '</section>';
+      }
+
+      /* ── Layout ──────────────────────────────────────────────────────── */
+      if (layout.description) {
+        html += '<section class="brief-section">';
+        html += '<h3 class="brief-section__title">Layout</h3>';
+        html += '<p class="layout-description">' + esc(layout.description) + '</p>';
+
+        if (layout.grid) {
+          html += '<p class="layout-grid"><strong>Grid:</strong> ' + esc(layout.grid) + '</p>';
+        }
+
+        if (layout.sections && layout.sections.length > 0) {
+          html += '<div class="layout-sections">';
+          html += '<p class="layout-sections__label"><strong>Page sections (in order):</strong></p>';
+          html += '<ol class="layout-sections__list">';
+          layout.sections.forEach(function (section) {
+            html += '<li>' + esc(section) + '</li>';
+          });
+          html += '</ol>';
+          html += '</div>';
+        }
+
+        if (layout.spacing_notes) {
+          html += '<p class="layout-spacing"><strong>Spacing:</strong> ' + esc(layout.spacing_notes) + '</p>';
+        }
+
+        html += '</section>';
+      }
+
+      /* ── Copy Hierarchy ──────────────────────────────────────────────── */
+      if (copyHierarchy.length > 0) {
+        html += '<section class="brief-section">';
+        html += '<h3 class="brief-section__title">Copy Hierarchy</h3>';
+        html += '<ol class="copy-hierarchy-list">';
+        copyHierarchy.forEach(function (item) {
+          html += '<li class="copy-hierarchy-item">' + esc(item) + '</li>';
+        });
+        html += '</ol>';
+        html += '</section>';
+      }
+
+      /* ── Additional Notes ────────────────────────────────────────────── */
+      if (brief.additional_notes) {
+        html += '<section class="brief-section brief-section--notes">';
+        html += '<h3 class="brief-section__title">Additional Notes</h3>';
+        html += '<p class="brief-notes">' + esc(brief.additional_notes) + '</p>';
+        html += '</section>';
+      }
+
+      html += '</div>'; // .brief-partial
+      return html;
+    }
+
+    /* ------------------------------------------------------------------ */
+    /*  Swatch click-to-copy                                               */
+    /* ------------------------------------------------------------------ */
+
+    function attachSwatchCopyHandlers() {
+      document.querySelectorAll('.swatch-card').forEach(function (card) {
+        function handleCopy() {
+          const hex = card.dataset.hex;
+          if (!hex) return;
+          copyToClipboard(hex, card);
+        }
+        card.addEventListener('click', handleCopy);
+        card.addEventListener('keydown', function (e) {
+          if (e.key === 'Enter' || e.key === ' ') {
+            e.preventDefault();
+            handleCopy();
+          }
+        });
+      });
+    }
+
+    /* ------------------------------------------------------------------ */
+    /*  Export tabs                                                         */
+    /* ------------------------------------------------------------------ */
+
+    const tabBtns = document.querySelectorAll('.tab-btn');
+    const tabPanels = {
+      markdown: $('panel-markdown'),
+      text: $('panel-text'),
+      json: $('panel-json'),
+    };
+
+    function activateTab(format) {
+      tabBtns.forEach(function (btn) {
+        const active = btn.dataset.format === format;
+        btn.classList.toggle('tab-btn--active', active);
+        btn.setAttribute('aria-selected', active ? 'true' : 'false');
+      });
+      Object.entries(tabPanels).forEach(function ([key, panel]) {
+        if (key === format) {
+          panel.hidden = false;
+          panel.classList.add('export-panel--active');
+        } else {
+          panel.hidden = true;
+          panel.classList.remove('export-panel--active');
+        }
+      });
+    }
+
+    tabBtns.forEach(function (btn) {
+      btn.addEventListener('click', function () {
+        activateTab(btn.dataset.format);
+      });
+    });
+
+    /* ------------------------------------------------------------------ */
+    /*  Copy to clipboard                                                  */
+    /* ------------------------------------------------------------------ */
+
+    /**
+     * Copy text to clipboard and show a brief visual confirmation.
+     * @param {string} text - Text to copy.
+     * @param {HTMLElement} [triggerEl] - Element to show confirmation on.
+     */
+    async function copyToClipboard(text, triggerEl) {
+      try {
+        await navigator.clipboard.writeText(text);
+        if (triggerEl) {
+          showCopyConfirmation(triggerEl);
+        }
+      } catch (err) {
+        // Fallback for browsers without clipboard API.
+        const el = document.createElement('textarea');
+        el.value = text;
+        el.style.position = 'fixed';
+        el.style.opacity = '0';
+        document.body.appendChild(el);
+        el.select();
+        try {
+          document.execCommand('copy');
+          if (triggerEl) showCopyConfirmation(triggerEl);
+        } catch (fallbackErr) {
+          console.warn('Copy to clipboard failed:', fallbackErr);
+        }
+        document.body.removeChild(el);
+      }
+    }
+
+    /** Show a brief "Copied!" confirmation on an element. */
+    function showCopyConfirmation(el) {
+      el.classList.add('copied');
+      // For copy buttons, update the text temporarily.
+      const copyTextEl = el.querySelector('.copy-text');
+      const originalText = copyTextEl ? copyTextEl.textContent : null;
+      if (copyTextEl) copyTextEl.textContent = 'Copied!';
+      const originalLabel = el.getAttribute('aria-label');
+      el.setAttribute('aria-label', 'Copied to clipboard!');
+
+      setTimeout(function () {
+        el.classList.remove('copied');
+        if (copyTextEl && originalText) copyTextEl.textContent = originalText;
+        if (originalLabel) el.setAttribute('aria-label', originalLabel);
+      }, 2000);
+    }
+
+    // Attach copy handlers to all export copy buttons.
+    document.querySelectorAll('.btn--copy').forEach(function (btn) {
+      btn.addEventListener('click', function () {
+        const targetId = btn.dataset.copyTarget;
+        const targetEl = targetId ? $(targetId) : null;
+        if (targetEl) {
+          copyToClipboard(targetEl.textContent, btn);
+        }
+      });
+    });
+
+  </script>
+</body>
+</html>

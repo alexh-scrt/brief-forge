@@ -1,0 +1,196 @@
+{#
+  Brief Forge — Brief Partial Template
+  =====================================
+  Renders a structured DesignBrief result with colour swatches, typography
+  pairings, layout sections, and copy hierarchy.
+
+  This template is used in two contexts:
+  1. Direct server-side rendering (e.g. for progressive enhancement or
+     non-JS environments) where it is included via Jinja2's
+     ``{% include 'brief_partial.html' %}`` with a ``brief`` context variable.
+  2. As the reference structure for the JavaScript-generated HTML in
+     index.html — the JS ``buildBriefHTML()`` function mirrors this structure.
+
+  Expected context variables
+  --------------------------
+  brief : DesignBrief (or dict)
+      The design brief to render.  Supports both the Pydantic model instance
+      (accessed via attribute notation) and a plain dict (accessed via the
+      Jinja2 ``.`` accessor, which handles both transparently).
+
+  Usage
+  -----
+  {% include 'brief_partial.html' %}
+#}
+
+<div class="brief-partial">
+
+  {# ── Header ────────────────────────────────────────────────────────── #}
+  <div class="brief-header">
+    <h2 class="brief-title">{{ brief.title | e }}</h2>
+
+    {% if brief.mood_descriptors %}
+    <div class="brief-mood" aria-label="Mood descriptors">
+      {% for mood in brief.mood_descriptors %}
+      <span class="mood-tag">{{ mood | e }}</span>
+      {% endfor %}
+    </div>
+    {% endif %}
+  </div>
+
+  {# ── Project Overview ────────────────────────────────────────────── #}
+  {% if brief.project_overview %}
+  <section class="brief-section" aria-labelledby="brief-overview-heading">
+    <h3 id="brief-overview-heading" class="brief-section__title">Project Overview</h3>
+    <p class="brief-overview">{{ brief.project_overview | e }}</p>
+  </section>
+  {% endif %}
+
+  {# ── Colour Palette ──────────────────────────────────────────────── #}
+  {% set palette = brief.color_palette %}
+  {% if palette and palette.swatches %}
+  <section class="brief-section" aria-labelledby="brief-palette-heading">
+    <h3 id="brief-palette-heading" class="brief-section__title">Colour Palette</h3>
+    <div class="palette-grid">
+      {% for swatch in palette.swatches %}
+        {#
+          Determine whether the swatch colour is light or dark so we can
+          choose a contrasting text colour for the hex code overlay.
+          We do this with a simple Jinja2 approach: compare the hex digits.
+          A full luminance calculation is done in JS; here we use a
+          simpler heuristic — if the sum of RGB components > 382 (out of 765)
+          we treat it as light.
+
+          hex_code is normalised to uppercase 7-char form (#RRGGBB).
+        #}
+        {% set hex = swatch.hex_code %}
+        {# Strip the leading # and extract RGB components as integers. #}
+        {% set r = hex[1:3] | int(base=16) if hex | length >= 7 else 128 %}
+        {% set g = hex[3:5] | int(base=16) if hex | length >= 7 else 128 %}
+        {% set b = hex[5:7] | int(base=16) if hex | length >= 7 else 128 %}
+        {% set luminance_approx = (r * 299 + g * 587 + b * 114) / 1000 %}
+        {% set text_class = 'swatch-text--dark' if luminance_approx > 128 else 'swatch-text--light' %}
+
+      <div
+        class="swatch-card"
+        role="button"
+        tabindex="0"
+        data-hex="{{ hex | e }}"
+        aria-label="Copy hex code {{ hex | e }} ({{ swatch.name | e }})"
+        title="Click to copy {{ hex | e }}"
+      >
+        {# Colour swatch — background is the actual colour #}
+        <div
+          class="swatch-color {{ text_class }}"
+          style="background-color: {{ hex | e }};"
+          aria-hidden="true"
+        >
+          <span class="swatch-hex">{{ hex | e }}</span>
+          <span class="swatch-copy-hint">Click to copy</span>
+        </div>
+
+        {# Swatch metadata #}
+        <div class="swatch-info">
+          <span class="swatch-role">{{ swatch.role | e }}</span>
+          <span class="swatch-name">{{ swatch.name | e }}</span>
+          {% if swatch.usage %}
+          <span class="swatch-usage">{{ swatch.usage | e }}</span>
+          {% endif %}
+        </div>
+      </div>
+      {% endfor %}
+    </div>{# .palette-grid #}
+  </section>
+  {% endif %}
+
+  {# ── Typography ───────────────────────────────────────────────────── #}
+  {% set typography = brief.typography %}
+  {% if typography %}
+  <section class="brief-section" aria-labelledby="brief-typography-heading">
+    <h3 id="brief-typography-heading" class="brief-section__title">Typography</h3>
+    <div class="typography-grid">
+
+      {% if typography.display_font %}
+      <div class="type-item">
+        <span class="type-item__label">Display / Headlines</span>
+        <span class="type-item__font">{{ typography.display_font | e }}</span>
+        {% if typography.display_weight %}
+        <span class="type-item__weight">Weight {{ typography.display_weight | e }}</span>
+        {% endif %}
+      </div>
+      {% endif %}
+
+      {% if typography.body_font %}
+      <div class="type-item">
+        <span class="type-item__label">Body Copy</span>
+        <span class="type-item__font">{{ typography.body_font | e }}</span>
+        {% if typography.body_weight %}
+        <span class="type-item__weight">Weight {{ typography.body_weight | e }}</span>
+        {% endif %}
+      </div>
+      {% endif %}
+
+      {% if typography.accent_font %}
+      <div class="type-item">
+        <span class="type-item__label">Accent / Labels</span>
+        <span class="type-item__font">{{ typography.accent_font | e }}</span>
+      </div>
+      {% endif %}
+
+    </div>{# .typography-grid #}
+
+    {% if typography.notes %}
+    <p class="typography-notes">{{ typography.notes | e }}</p>
+    {% endif %}
+  </section>
+  {% endif %}
+
+  {# ── Layout ───────────────────────────────────────────────────────── #}
+  {% set layout = brief.layout %}
+  {% if layout and layout.description %}
+  <section class="brief-section" aria-labelledby="brief-layout-heading">
+    <h3 id="brief-layout-heading" class="brief-section__title">Layout</h3>
+    <p class="layout-description">{{ layout.description | e }}</p>
+
+    {% if layout.grid %}
+    <p class="layout-grid"><strong>Grid:</strong> {{ layout.grid | e }}</p>
+    {% endif %}
+
+    {% if layout.sections %}
+    <div class="layout-sections">
+      <p class="layout-sections__label"><strong>Page sections (in order):</strong></p>
+      <ol class="layout-sections__list">
+        {% for section in layout.sections %}
+        <li>{{ section | e }}</li>
+        {% endfor %}
+      </ol>
+    </div>
+    {% endif %}
+
+    {% if layout.spacing_notes %}
+    <p class="layout-spacing"><strong>Spacing:</strong> {{ layout.spacing_notes | e }}</p>
+    {% endif %}
+  </section>
+  {% endif %}
+
+  {# ── Copy Hierarchy ───────────────────────────────────────────────── #}
+  {% if brief.copy_hierarchy %}
+  <section class="brief-section" aria-labelledby="brief-copy-heading">
+    <h3 id="brief-copy-heading" class="brief-section__title">Copy Hierarchy</h3>
+    <ol class="copy-hierarchy-list">
+      {% for item in brief.copy_hierarchy %}
+      <li class="copy-hierarchy-item">{{ item | e }}</li>
+      {% endfor %}
+    </ol>
+  </section>
+  {% endif %}
+
+  {# ── Additional Notes ─────────────────────────────────────────────── #}
+  {% if brief.additional_notes %}
+  <section class="brief-section brief-section--notes" aria-labelledby="brief-notes-heading">
+    <h3 id="brief-notes-heading" class="brief-section__title">Additional Notes</h3>
+    <p class="brief-notes">{{ brief.additional_notes | e }}</p>
+  </section>
+  {% endif %}
+
+</div>{# .brief-partial #}
