@@ -1,0 +1,1508 @@
+/*
+ * Brief Forge — Main Stylesheet
+ *
+ * A clean, responsive stylesheet for the Brief Forge web application.
+ * Organised into the following sections:
+ *
+ *  1.  CSS Custom Properties (design tokens)
+ *  2.  Reset & Base
+ *  3.  Typography
+ *  4.  Layout Primitives
+ *  5.  Site Header
+ *  6.  Main Content
+ *  7.  Input Section / Card
+ *  8.  Example Prompt Buttons
+ *  9.  Form Elements
+ * 10.  Buttons
+ * 11.  Error States
+ * 12.  Result Section
+ * 13.  Brief Partial — Header & Mood Tags
+ * 14.  Brief Partial — Colour Palette & Swatches
+ * 15.  Brief Partial — Typography Section
+ * 16.  Brief Partial — Layout Section
+ * 17.  Brief Partial — Copy Hierarchy
+ * 18.  Brief Partial — Additional Notes
+ * 19.  Export Tabs
+ * 20.  Export Output Panels
+ * 21.  Loading Spinner
+ * 22.  Site Footer
+ * 23.  Utility Classes
+ * 24.  Responsive Breakpoints
+ * 25.  Reduced-motion
+ * 26.  Print
+ */
+
+/* =========================================================================
+   1. CSS Custom Properties
+   ========================================================================= */
+
+:root {
+  /* Colour palette */
+  --color-bg:            #F8F7F4;
+  --color-surface:       #FFFFFF;
+  --color-surface-2:     #F2F0EC;
+  --color-border:        #E2DDD6;
+  --color-border-focus:  #6C6AC4;
+
+  --color-text:          #1A1916;
+  --color-text-secondary:#5C574F;
+  --color-text-tertiary: #8A837A;
+
+  --color-primary:       #6C6AC4;
+  --color-primary-hover: #5856A8;
+  --color-primary-active:#4A489A;
+  --color-primary-light: #EEEDF9;
+
+  --color-success:       #2D7D52;
+  --color-success-light: #E6F5ED;
+  --color-warning:       #B45309;
+  --color-warning-light: #FEF3C7;
+  --color-error:         #B91C1C;
+  --color-error-light:   #FEE2E2;
+
+  /* Typography */
+  --font-sans:     'Inter', 'Helvetica Neue', Arial, sans-serif;
+  --font-mono:     'JetBrains Mono', 'Fira Code', 'Cascadia Code', Consolas, monospace;
+
+  --text-xs:   0.75rem;   /* 12px */
+  --text-sm:   0.875rem;  /* 14px */
+  --text-base: 1rem;      /* 16px */
+  --text-lg:   1.125rem;  /* 18px */
+  --text-xl:   1.25rem;   /* 20px */
+  --text-2xl:  1.5rem;    /* 24px */
+  --text-3xl:  1.875rem;  /* 30px */
+  --text-4xl:  2.25rem;   /* 36px */
+
+  --font-weight-normal:  400;
+  --font-weight-medium:  500;
+  --font-weight-semibold:600;
+  --font-weight-bold:    700;
+
+  --leading-tight:  1.25;
+  --leading-snug:   1.375;
+  --leading-normal: 1.5;
+  --leading-relaxed:1.625;
+
+  /* Spacing */
+  --space-1:  0.25rem;   /*  4px */
+  --space-2:  0.5rem;    /*  8px */
+  --space-3:  0.75rem;   /* 12px */
+  --space-4:  1rem;      /* 16px */
+  --space-5:  1.25rem;   /* 20px */
+  --space-6:  1.5rem;    /* 24px */
+  --space-8:  2rem;      /* 32px */
+  --space-10: 2.5rem;    /* 40px */
+  --space-12: 3rem;      /* 48px */
+  --space-16: 4rem;      /* 64px */
+  --space-20: 5rem;      /* 80px */
+
+  /* Border radii */
+  --radius-sm:  0.25rem;
+  --radius-md:  0.5rem;
+  --radius-lg:  0.75rem;
+  --radius-xl:  1rem;
+  --radius-2xl: 1.5rem;
+  --radius-full:9999px;
+
+  /* Shadows */
+  --shadow-xs:  0 1px 2px 0 rgba(0,0,0,.05);
+  --shadow-sm:  0 1px 3px 0 rgba(0,0,0,.08), 0 1px 2px -1px rgba(0,0,0,.06);
+  --shadow-md:  0 4px 6px -1px rgba(0,0,0,.08), 0 2px 4px -2px rgba(0,0,0,.06);
+  --shadow-lg:  0 10px 15px -3px rgba(0,0,0,.08), 0 4px 6px -4px rgba(0,0,0,.05);
+  --shadow-xl:  0 20px 25px -5px rgba(0,0,0,.08), 0 8px 10px -6px rgba(0,0,0,.05);
+
+  /* Transitions */
+  --transition-fast:   150ms ease;
+  --transition-normal: 250ms ease;
+  --transition-slow:   400ms ease;
+
+  /* Layout */
+  --max-width:   860px;
+  --header-height: 4rem;
+}
+
+/* =========================================================================
+   2. Reset & Base
+   ========================================================================= */
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html {
+  scroll-behavior: smooth;
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
+  font-size: 16px;
+}
+
+body {
+  font-family: var(--font-sans);
+  font-size: var(--text-base);
+  font-weight: var(--font-weight-normal);
+  line-height: var(--leading-normal);
+  color: var(--color-text);
+  background-color: var(--color-bg);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+img,
+svg {
+  display: block;
+  max-width: 100%;
+}
+
+button {
+  cursor: pointer;
+  font-family: inherit;
+}
+
+a {
+  color: var(--color-primary);
+  text-decoration: underline;
+  text-decoration-thickness: 1px;
+  text-underline-offset: 2px;
+}
+
+a:hover {
+  color: var(--color-primary-hover);
+}
+
+ul,
+ol {
+  list-style: none;
+}
+
+/* =========================================================================
+   3. Typography
+   ========================================================================= */
+
+h1, h2, h3, h4, h5, h6 {
+  font-weight: var(--font-weight-semibold);
+  line-height: var(--leading-tight);
+  color: var(--color-text);
+  letter-spacing: -0.01em;
+}
+
+p {
+  line-height: var(--leading-relaxed);
+}
+
+code,
+pre {
+  font-family: var(--font-mono);
+  font-size: var(--text-sm);
+}
+
+pre {
+  overflow-x: auto;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+strong {
+  font-weight: var(--font-weight-semibold);
+}
+
+/* =========================================================================
+   4. Layout Primitives
+   ========================================================================= */
+
+.container {
+  width: 100%;
+  max-width: var(--max-width);
+  margin-inline: auto;
+  padding-inline: var(--space-6);
+}
+
+/* =========================================================================
+   5. Site Header
+   ========================================================================= */
+
+.site-header {
+  background-color: var(--color-surface);
+  border-bottom: 1px solid var(--color-border);
+  padding-block: var(--space-6);
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  background-color: rgba(255, 255, 255, 0.92);
+  box-shadow: var(--shadow-xs);
+}
+
+.header-inner {
+  max-width: var(--max-width);
+  margin-inline: auto;
+  padding-inline: var(--space-6);
+  display: flex;
+  align-items: center;
+  gap: var(--space-6);
+  flex-wrap: wrap;
+}
+
+.logo {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  flex-shrink: 0;
+}
+
+.logo-icon {
+  font-size: var(--text-2xl);
+  line-height: 1;
+  user-select: none;
+}
+
+.logo-text {
+  font-size: var(--text-xl);
+  font-weight: var(--font-weight-bold);
+  color: var(--color-text);
+  letter-spacing: -0.02em;
+  white-space: nowrap;
+}
+
+.tagline {
+  font-size: var(--text-sm);
+  color: var(--color-text-secondary);
+  line-height: var(--leading-snug);
+  margin: 0;
+  flex: 1;
+  min-width: 0;
+}
+
+/* =========================================================================
+   6. Main Content
+   ========================================================================= */
+
+.main-content {
+  flex: 1;
+  max-width: var(--max-width);
+  margin-inline: auto;
+  padding-inline: var(--space-6);
+  padding-block: var(--space-10);
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-8);
+}
+
+/* =========================================================================
+   7. Input Section / Card
+   ========================================================================= */
+
+.input-section {
+  width: 100%;
+}
+
+.card {
+  background-color: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-xl);
+  padding: var(--space-8);
+  box-shadow: var(--shadow-sm);
+}
+
+.input-card {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-6);
+}
+
+.section-title {
+  font-size: var(--text-2xl);
+  font-weight: var(--font-weight-bold);
+  color: var(--color-text);
+  letter-spacing: -0.02em;
+}
+
+.section-description {
+  font-size: var(--text-base);
+  color: var(--color-text-secondary);
+  line-height: var(--leading-relaxed);
+  margin: 0;
+}
+
+/* =========================================================================
+   8. Example Prompt Buttons
+   ========================================================================= */
+
+.example-prompts {
+  background-color: var(--color-surface-2);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  padding: var(--space-4) var(--space-5);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.example-prompts__label {
+  font-size: var(--text-xs);
+  font-weight: var(--font-weight-semibold);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--color-text-tertiary);
+  margin: 0;
+}
+
+.example-prompts__list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+}
+
+.example-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+  padding: var(--space-2) var(--space-3);
+  background-color: var(--color-surface);
+  color: var(--color-text-secondary);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-full);
+  font-size: var(--text-sm);
+  font-weight: var(--font-weight-medium);
+  line-height: 1;
+  white-space: nowrap;
+  transition:
+    background-color var(--transition-fast),
+    color var(--transition-fast),
+    border-color var(--transition-fast),
+    box-shadow var(--transition-fast);
+  cursor: pointer;
+  user-select: none;
+}
+
+.example-btn:hover {
+  background-color: var(--color-primary-light);
+  color: var(--color-primary);
+  border-color: var(--color-primary);
+  box-shadow: var(--shadow-xs);
+}
+
+.example-btn:focus-visible {
+  outline: 2px solid var(--color-border-focus);
+  outline-offset: 2px;
+}
+
+.example-btn:active {
+  transform: scale(0.97);
+}
+
+/* =========================================================================
+   9. Form Elements
+   ========================================================================= */
+
+.brief-form {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+
+.form-field {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.form-label {
+  display: flex;
+  align-items: baseline;
+  gap: var(--space-1);
+  font-size: var(--text-sm);
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-text);
+  cursor: pointer;
+}
+
+.form-label__required {
+  color: var(--color-error);
+  font-size: var(--text-xs);
+  line-height: 1;
+}
+
+.form-textarea {
+  width: 100%;
+  min-height: 160px;
+  resize: vertical;
+  padding: var(--space-3) var(--space-4);
+  font-family: var(--font-sans);
+  font-size: var(--text-base);
+  line-height: var(--leading-relaxed);
+  color: var(--color-text);
+  background-color: var(--color-surface);
+  border: 1.5px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  transition:
+    border-color var(--transition-fast),
+    box-shadow var(--transition-fast);
+  appearance: none;
+  -webkit-appearance: none;
+}
+
+.form-textarea::placeholder {
+  color: var(--color-text-tertiary);
+  opacity: 1;
+}
+
+.form-textarea:hover {
+  border-color: var(--color-text-tertiary);
+}
+
+.form-textarea:focus {
+  outline: none;
+  border-color: var(--color-border-focus);
+  box-shadow: 0 0 0 3px rgba(108, 106, 196, 0.15);
+}
+
+.form-field__footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: var(--space-4);
+}
+
+.form-hint {
+  font-size: var(--text-xs);
+  color: var(--color-text-tertiary);
+}
+
+.char-count {
+  font-size: var(--text-xs);
+  color: var(--color-text-tertiary);
+  font-variant-numeric: tabular-nums;
+  transition: color var(--transition-fast);
+  white-space: nowrap;
+}
+
+.char-count--warning {
+  color: var(--color-warning);
+}
+
+.char-count--danger {
+  color: var(--color-error);
+  font-weight: var(--font-weight-semibold);
+}
+
+/* Form-level validation error */
+.form-error {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-2);
+  padding: var(--space-3) var(--space-4);
+  background-color: var(--color-error-light);
+  border: 1px solid #FECACA;
+  border-radius: var(--radius-md);
+  color: var(--color-error);
+  font-size: var(--text-sm);
+  line-height: var(--leading-snug);
+}
+
+.form-error__icon {
+  flex-shrink: 0;
+  font-size: var(--text-base);
+  line-height: 1.25;
+}
+
+.form-error__message {
+  flex: 1;
+}
+
+/* =========================================================================
+   10. Buttons
+   ========================================================================= */
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2);
+  padding: var(--space-3) var(--space-5);
+  border: 1.5px solid transparent;
+  border-radius: var(--radius-lg);
+  font-family: inherit;
+  font-size: var(--text-sm);
+  font-weight: var(--font-weight-semibold);
+  line-height: 1;
+  white-space: nowrap;
+  cursor: pointer;
+  user-select: none;
+  text-decoration: none;
+  transition:
+    background-color var(--transition-fast),
+    color var(--transition-fast),
+    border-color var(--transition-fast),
+    box-shadow var(--transition-fast),
+    transform var(--transition-fast),
+    opacity var(--transition-fast);
+  -webkit-tap-highlight-color: transparent;
+}
+
+.btn:focus-visible {
+  outline: 2px solid var(--color-border-focus);
+  outline-offset: 2px;
+}
+
+.btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  pointer-events: none;
+}
+
+/* Primary button */
+.btn--primary {
+  background-color: var(--color-primary);
+  color: #FFFFFF;
+  border-color: var(--color-primary);
+  box-shadow: var(--shadow-sm);
+}
+
+.btn--primary:hover:not(:disabled) {
+  background-color: var(--color-primary-hover);
+  border-color: var(--color-primary-hover);
+  box-shadow: var(--shadow-md);
+  transform: translateY(-1px);
+}
+
+.btn--primary:active:not(:disabled) {
+  background-color: var(--color-primary-active);
+  border-color: var(--color-primary-active);
+  transform: translateY(0);
+  box-shadow: var(--shadow-xs);
+}
+
+/* Secondary button */
+.btn--secondary {
+  background-color: var(--color-surface);
+  color: var(--color-text-secondary);
+  border-color: var(--color-border);
+}
+
+.btn--secondary:hover:not(:disabled) {
+  background-color: var(--color-surface-2);
+  color: var(--color-text);
+  border-color: var(--color-text-tertiary);
+}
+
+.btn--secondary:active:not(:disabled) {
+  background-color: var(--color-border);
+  transform: scale(0.98);
+}
+
+/* Generate button — full width */
+.btn--generate {
+  width: 100%;
+  padding-block: var(--space-4);
+  font-size: var(--text-base);
+  border-radius: var(--radius-lg);
+  letter-spacing: 0.01em;
+}
+
+/* Copy button */
+.btn--copy {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+  padding: var(--space-2) var(--space-3);
+  background-color: var(--color-surface);
+  color: var(--color-text-secondary);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  font-size: var(--text-xs);
+  font-weight: var(--font-weight-medium);
+  transition:
+    background-color var(--transition-fast),
+    color var(--transition-fast),
+    border-color var(--transition-fast);
+}
+
+.btn--copy:hover {
+  background-color: var(--color-primary-light);
+  color: var(--color-primary);
+  border-color: var(--color-primary);
+}
+
+.btn--copy.copied {
+  background-color: var(--color-success-light);
+  color: var(--color-success);
+  border-color: var(--color-success);
+}
+
+.copy-icon {
+  font-size: 0.875em;
+  line-height: 1;
+}
+
+/* =========================================================================
+   11. Error States
+   ========================================================================= */
+
+/* API error banner */
+.error-banner {
+  background-color: var(--color-error-light);
+  border: 1px solid #FECACA;
+  border-radius: var(--radius-lg);
+  padding: var(--space-4);
+  animation: slideDown 0.2s ease;
+}
+
+.error-banner__inner {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-3);
+}
+
+.error-banner__icon {
+  font-size: var(--text-xl);
+  flex-shrink: 0;
+  line-height: 1;
+}
+
+.error-banner__content {
+  flex: 1;
+  min-width: 0;
+}
+
+.error-banner__title {
+  display: block;
+  font-size: var(--text-sm);
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-error);
+  margin-bottom: var(--space-1);
+}
+
+.error-banner__message {
+  font-size: var(--text-sm);
+  color: #991B1B;
+  margin: 0;
+  line-height: var(--leading-snug);
+}
+
+.error-banner__close {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.5rem;
+  height: 1.5rem;
+  background: none;
+  border: none;
+  color: var(--color-error);
+  font-size: var(--text-lg);
+  line-height: 1;
+  border-radius: var(--radius-sm);
+  padding: 0;
+  transition: opacity var(--transition-fast);
+}
+
+.error-banner__close:hover {
+  opacity: 0.7;
+}
+
+/* =========================================================================
+   12. Result Section
+   ========================================================================= */
+
+.result-section {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-8);
+  animation: fadeIn 0.4s ease;
+}
+
+.result-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-4);
+  flex-wrap: wrap;
+}
+
+.result-title {
+  font-size: var(--text-2xl);
+  font-weight: var(--font-weight-bold);
+  color: var(--color-text);
+  letter-spacing: -0.02em;
+}
+
+/* =========================================================================
+   13. Brief Partial — Header & Mood Tags
+   ========================================================================= */
+
+.brief-partial {
+  background-color: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-xl);
+  overflow: hidden;
+  box-shadow: var(--shadow-sm);
+}
+
+.brief-header {
+  padding: var(--space-8);
+  border-bottom: 1px solid var(--color-border);
+  background: linear-gradient(135deg, var(--color-surface) 0%, var(--color-surface-2) 100%);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+
+.brief-title {
+  font-size: var(--text-3xl);
+  font-weight: var(--font-weight-bold);
+  color: var(--color-text);
+  letter-spacing: -0.025em;
+  line-height: var(--leading-tight);
+}
+
+.brief-mood {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+}
+
+.mood-tag {
+  display: inline-block;
+  padding: var(--space-1) var(--space-3);
+  background-color: var(--color-primary-light);
+  color: var(--color-primary);
+  border: 1px solid rgba(108, 106, 196, 0.2);
+  border-radius: var(--radius-full);
+  font-size: var(--text-xs);
+  font-weight: var(--font-weight-semibold);
+  letter-spacing: 0.04em;
+  text-transform: capitalize;
+}
+
+/* Brief sections */
+.brief-section {
+  padding: var(--space-8);
+  border-bottom: 1px solid var(--color-border);
+}
+
+.brief-section:last-child {
+  border-bottom: none;
+}
+
+.brief-section__title {
+  font-size: var(--text-xs);
+  font-weight: var(--font-weight-bold);
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--color-text-tertiary);
+  margin-bottom: var(--space-5);
+}
+
+.brief-overview {
+  font-size: var(--text-base);
+  color: var(--color-text-secondary);
+  line-height: var(--leading-relaxed);
+  margin: 0;
+}
+
+/* Notes section */
+.brief-section--notes {
+  background-color: var(--color-surface-2);
+}
+
+.brief-notes {
+  font-size: var(--text-sm);
+  color: var(--color-text-secondary);
+  line-height: var(--leading-relaxed);
+  margin: 0;
+  font-style: italic;
+}
+
+/* =========================================================================
+   14. Brief Partial — Colour Palette & Swatches
+   ========================================================================= */
+
+.palette-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+  gap: var(--space-4);
+}
+
+.swatch-card {
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  cursor: pointer;
+  transition:
+    transform var(--transition-fast),
+    box-shadow var(--transition-fast),
+    border-color var(--transition-fast);
+  background-color: var(--color-surface);
+  box-shadow: var(--shadow-xs);
+}
+
+.swatch-card:hover {
+  transform: translateY(-3px);
+  box-shadow: var(--shadow-md);
+  border-color: var(--color-text-tertiary);
+}
+
+.swatch-card:focus-visible {
+  outline: 2px solid var(--color-border-focus);
+  outline-offset: 2px;
+}
+
+.swatch-card:active {
+  transform: translateY(-1px);
+  box-shadow: var(--shadow-sm);
+}
+
+.swatch-card.copied {
+  border-color: var(--color-success);
+  box-shadow: 0 0 0 2px var(--color-success-light);
+}
+
+/* The coloured rectangle */
+.swatch-color {
+  position: relative;
+  width: 100%;
+  height: 100px;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: flex-end;
+  padding: var(--space-2) var(--space-3);
+  overflow: hidden;
+}
+
+.swatch-hex {
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  font-weight: var(--font-weight-semibold);
+  letter-spacing: 0.05em;
+  line-height: 1;
+  transition: opacity var(--transition-fast);
+}
+
+.swatch-copy-hint {
+  font-size: 0.65rem;
+  font-weight: var(--font-weight-medium);
+  letter-spacing: 0.03em;
+  opacity: 0;
+  transition: opacity var(--transition-fast);
+  line-height: 1;
+  margin-top: 2px;
+}
+
+.swatch-card:hover .swatch-copy-hint {
+  opacity: 0.8;
+}
+
+/* Text colour variants for contrast */
+.swatch-text--light {
+  color: rgba(255, 255, 255, 0.95);
+  text-shadow: 0 1px 2px rgba(0,0,0,0.3);
+}
+
+.swatch-text--dark {
+  color: rgba(0, 0, 0, 0.75);
+}
+
+/* Swatch metadata */
+.swatch-info {
+  padding: var(--space-3);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+}
+
+.swatch-role {
+  font-size: var(--text-xs);
+  font-weight: var(--font-weight-bold);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--color-text-tertiary);
+  line-height: 1;
+}
+
+.swatch-name {
+  font-size: var(--text-sm);
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-text);
+  line-height: var(--leading-tight);
+}
+
+.swatch-usage {
+  font-size: var(--text-xs);
+  color: var(--color-text-tertiary);
+  line-height: var(--leading-snug);
+}
+
+/* =========================================================================
+   15. Brief Partial — Typography Section
+   ========================================================================= */
+
+.typography-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: var(--space-4);
+  margin-bottom: var(--space-4);
+}
+
+.type-item {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  padding: var(--space-4);
+  background-color: var(--color-surface-2);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+}
+
+.type-item__label {
+  font-size: var(--text-xs);
+  font-weight: var(--font-weight-bold);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--color-text-tertiary);
+}
+
+.type-item__font {
+  font-size: var(--text-lg);
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-text);
+  line-height: var(--leading-tight);
+}
+
+.type-item__weight {
+  font-size: var(--text-xs);
+  color: var(--color-text-tertiary);
+  font-variant-numeric: tabular-nums;
+}
+
+.typography-notes {
+  font-size: var(--text-sm);
+  color: var(--color-text-secondary);
+  line-height: var(--leading-relaxed);
+  margin: 0;
+  padding: var(--space-3) var(--space-4);
+  background-color: var(--color-surface-2);
+  border-left: 3px solid var(--color-primary-light);
+  border-radius: 0 var(--radius-md) var(--radius-md) 0;
+}
+
+/* =========================================================================
+   16. Brief Partial — Layout Section
+   ========================================================================= */
+
+.layout-description {
+  font-size: var(--text-base);
+  color: var(--color-text-secondary);
+  line-height: var(--leading-relaxed);
+  margin-bottom: var(--space-4);
+}
+
+.layout-grid {
+  font-size: var(--text-sm);
+  color: var(--color-text-secondary);
+  margin-bottom: var(--space-4);
+  padding: var(--space-2) var(--space-3);
+  background-color: var(--color-surface-2);
+  border-radius: var(--radius-md);
+  display: inline-block;
+}
+
+.layout-sections {
+  margin-bottom: var(--space-4);
+}
+
+.layout-sections__label {
+  font-size: var(--text-sm);
+  color: var(--color-text);
+  margin-bottom: var(--space-3);
+}
+
+.layout-sections__list {
+  list-style: decimal;
+  list-style-position: inside;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.layout-sections__list li {
+  font-size: var(--text-sm);
+  color: var(--color-text-secondary);
+  padding: var(--space-2) var(--space-3);
+  background-color: var(--color-surface-2);
+  border-radius: var(--radius-md);
+  border-left: 3px solid var(--color-border);
+  line-height: var(--leading-snug);
+  transition: border-color var(--transition-fast);
+}
+
+.layout-sections__list li:hover {
+  border-left-color: var(--color-primary);
+}
+
+.layout-spacing {
+  font-size: var(--text-sm);
+  color: var(--color-text-secondary);
+  margin: 0;
+  margin-top: var(--space-4);
+}
+
+/* =========================================================================
+   17. Brief Partial — Copy Hierarchy
+   ========================================================================= */
+
+.copy-hierarchy-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  list-style: none;
+}
+
+.copy-hierarchy-item {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-3);
+  font-size: var(--text-base);
+  color: var(--color-text);
+  line-height: var(--leading-snug);
+  padding: var(--space-3) var(--space-4);
+  background-color: var(--color-surface-2);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  counter-increment: copy-item;
+  position: relative;
+  padding-left: var(--space-10);
+}
+
+.copy-hierarchy-list {
+  counter-reset: copy-item;
+}
+
+.copy-hierarchy-item::before {
+  content: counter(copy-item);
+  position: absolute;
+  left: var(--space-4);
+  top: var(--space-3);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.5rem;
+  height: 1.5rem;
+  min-width: 1.5rem;
+  background-color: var(--color-primary-light);
+  color: var(--color-primary);
+  border-radius: var(--radius-full);
+  font-size: var(--text-xs);
+  font-weight: var(--font-weight-bold);
+  line-height: 1;
+}
+
+/* =========================================================================
+   18. Brief Partial — Additional Notes (covered in section 13)
+   ========================================================================= */
+/* (Styles already included in .brief-section--notes and .brief-notes above) */
+
+/* =========================================================================
+   19. Export Tabs
+   ========================================================================= */
+
+.export-section {
+  background-color: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-xl);
+  overflow: hidden;
+  box-shadow: var(--shadow-sm);
+}
+
+.export-section__title {
+  font-size: var(--text-xs);
+  font-weight: var(--font-weight-bold);
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--color-text-tertiary);
+  padding: var(--space-5) var(--space-6) 0;
+  margin-bottom: var(--space-3);
+}
+
+.export-tabs {
+  display: flex;
+  padding-inline: var(--space-6);
+  border-bottom: 1px solid var(--color-border);
+  gap: 0;
+  overflow-x: auto;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+.export-tabs::-webkit-scrollbar {
+  display: none;
+}
+
+.tab-btn {
+  display: inline-flex;
+  align-items: center;
+  padding: var(--space-3) var(--space-5);
+  background: none;
+  border: none;
+  border-bottom: 2px solid transparent;
+  font-size: var(--text-sm);
+  font-weight: var(--font-weight-medium);
+  color: var(--color-text-tertiary);
+  cursor: pointer;
+  white-space: nowrap;
+  margin-bottom: -1px;
+  transition:
+    color var(--transition-fast),
+    border-color var(--transition-fast);
+  border-radius: 0;
+}
+
+.tab-btn:hover {
+  color: var(--color-text);
+}
+
+.tab-btn--active {
+  color: var(--color-primary);
+  border-bottom-color: var(--color-primary);
+  font-weight: var(--font-weight-semibold);
+}
+
+.tab-btn:focus-visible {
+  outline: 2px solid var(--color-border-focus);
+  outline-offset: -2px;
+  border-radius: var(--radius-sm);
+}
+
+/* =========================================================================
+   20. Export Output Panels
+   ========================================================================= */
+
+.export-panel {
+  display: none;
+  flex-direction: column;
+}
+
+.export-panel--active {
+  display: flex;
+}
+
+.export-panel[hidden] {
+  display: none;
+}
+
+.export-panel__toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-4);
+  padding: var(--space-4) var(--space-6);
+  border-bottom: 1px solid var(--color-border);
+  background-color: var(--color-surface-2);
+  flex-wrap: wrap;
+}
+
+.export-panel__label {
+  font-size: var(--text-xs);
+  color: var(--color-text-tertiary);
+  line-height: var(--leading-snug);
+  flex: 1;
+  min-width: 0;
+}
+
+.export-output {
+  font-family: var(--font-mono);
+  font-size: var(--text-sm);
+  line-height: var(--leading-relaxed);
+  color: var(--color-text);
+  background-color: var(--color-surface);
+  padding: var(--space-6);
+  overflow-x: auto;
+  overflow-y: auto;
+  max-height: 420px;
+  white-space: pre-wrap;
+  word-break: break-word;
+  tab-size: 2;
+  -moz-tab-size: 2;
+}
+
+.export-output:focus-visible {
+  outline: 2px solid var(--color-border-focus);
+  outline-offset: -2px;
+}
+
+/* =========================================================================
+   21. Loading Spinner
+   ========================================================================= */
+
+.spinner {
+  width: 1.125rem;
+  height: 1.125rem;
+  display: block;
+  animation: spin 0.8s linear infinite;
+}
+
+.spinner__track {
+  stroke: rgba(255, 255, 255, 0.3);
+}
+
+.spinner__arc {
+  stroke: #FFFFFF;
+  stroke-linecap: round;
+  transform-origin: center;
+  animation: dash 1.5s ease-in-out infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+@keyframes dash {
+  0%   { stroke-dashoffset: 31.4; }
+  50%  { stroke-dashoffset: 8; }
+  100% { stroke-dashoffset: 31.4; }
+}
+
+/* =========================================================================
+   22. Site Footer
+   ========================================================================= */
+
+.site-footer {
+  background-color: var(--color-surface);
+  border-top: 1px solid var(--color-border);
+  padding-block: var(--space-6);
+  margin-top: auto;
+}
+
+.footer-inner {
+  max-width: var(--max-width);
+  margin-inline: auto;
+  padding-inline: var(--space-6);
+}
+
+.footer-copy {
+  font-size: var(--text-sm);
+  color: var(--color-text-tertiary);
+  margin: 0;
+  text-align: center;
+  line-height: var(--leading-relaxed);
+}
+
+/* =========================================================================
+   23. Utility Classes
+   ========================================================================= */
+
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border-width: 0;
+}
+
+/* =========================================================================
+   24. Animations
+   ========================================================================= */
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* =========================================================================
+   25. Responsive Breakpoints
+   ========================================================================= */
+
+/* ── Small: ≤ 480px ──────────────────────────────────────────────────── */
+@media (max-width: 480px) {
+  :root {
+    --text-3xl: 1.5rem;
+    --text-2xl: 1.25rem;
+  }
+
+  .header-inner {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: var(--space-2);
+    padding-inline: var(--space-4);
+  }
+
+  .tagline {
+    font-size: var(--text-xs);
+  }
+
+  .main-content {
+    padding-inline: var(--space-4);
+    padding-block: var(--space-6);
+    gap: var(--space-6);
+  }
+
+  .card {
+    padding: var(--space-5);
+  }
+
+  .brief-header,
+  .brief-section {
+    padding: var(--space-5);
+  }
+
+  .brief-title {
+    font-size: var(--text-2xl);
+  }
+
+  .palette-grid {
+    grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+    gap: var(--space-3);
+  }
+
+  .swatch-color {
+    height: 80px;
+  }
+
+  .typography-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .export-tabs {
+    padding-inline: var(--space-4);
+  }
+
+  .tab-btn {
+    padding-inline: var(--space-3);
+    font-size: var(--text-xs);
+  }
+
+  .export-output {
+    font-size: var(--text-xs);
+    padding: var(--space-4);
+    max-height: 300px;
+  }
+
+  .export-panel__toolbar {
+    padding: var(--space-3) var(--space-4);
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .example-prompts__list {
+    gap: var(--space-2);
+  }
+
+  .result-header {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .result-title {
+    font-size: var(--text-xl);
+  }
+}
+
+/* ── Medium: 481px – 640px ───────────────────────────────────────────── */
+@media (min-width: 481px) and (max-width: 640px) {
+  .palette-grid {
+    grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
+  }
+
+  .header-inner {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: var(--space-2);
+  }
+}
+
+/* ── Large: ≥ 641px ──────────────────────────────────────────────────── */
+@media (min-width: 641px) {
+  .palette-grid {
+    grid-template-columns: repeat(5, 1fr);
+  }
+
+  .btn--generate {
+    max-width: 320px;
+  }
+}
+
+/* =========================================================================
+   26. Reduced-motion
+   ========================================================================= */
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+
+  .spinner {
+    animation: none;
+  }
+}
+
+/* =========================================================================
+   27. Print
+   ========================================================================= */
+
+@media print {
+  .site-header,
+  .site-footer,
+  .input-section,
+  .export-section,
+  .btn,
+  .error-banner {
+    display: none !important;
+  }
+
+  body {
+    background: white;
+    color: black;
+    font-size: 12pt;
+  }
+
+  .brief-partial {
+    box-shadow: none;
+    border: 1px solid #ccc;
+    page-break-inside: avoid;
+  }
+
+  .swatch-color {
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+    color-adjust: exact;
+  }
+
+  .palette-grid {
+    grid-template-columns: repeat(5, 1fr);
+  }
+}
